@@ -1,0 +1,36 @@
+import torch
+import torchvision
+from torch import nn
+from torch.nn import Conv2d
+from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
+
+dataset=torchvision.datasets.CIFAR10("./torchvision_dataset",train=False,transform=torchvision.transforms.ToTensor(),download=True)
+
+dataloader=DataLoader(dataset,batch_size=64)
+
+class first_nn(nn.Module):#父类的初始化
+    def __init__(self):
+        super(first_nn, self).__init__()
+        self.conv1=Conv2d(in_channels=3,out_channels=6,kernel_size=3,stride=1,padding=0)#卷积层
+
+    def forward(self,x):
+        x=self.conv1(x)
+        return x
+
+First_nn=first_nn()
+
+writer=SummaryWriter("../logs")
+
+step=0
+for data in dataloader:
+    imgs,targets=data
+    output=First_nn(imgs)
+    print(imgs.shape)
+    print(output.shape)
+    #torch.Size([64, 3, 32, 32])
+    writer.add_images("input",imgs,step)
+    #torch.Size([64, 6, 30, 30])->[xxx, 3, 30, 30]
+    output=torch.reshape(output,(-1,3,30,30))#当不确定batch——size时填-1 会根据channel=3自动计算
+    writer.add_images("output",output,step)
+    step=step+1
